@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html id="config-page">
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Vasso (vasso.etc@gmail.com)">
+
+    <title>Вика-1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://brain-system.github.io"/>
+    <meta property="og:title" content="Вика-1"/>
+    <meta property="og:description" content="Брейн-система &quot;Вика-1&quot;"/>
+    <meta property="og:image" content="https://brain-system.github.io/img/preview.png"/>
+
+    <link rel="shortcut icon" href="./img/favicon.png">
+
+    <link rel="stylesheet" href="./fnt/icons.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+
+
+
+<header>
+
+<div class="connection-controls" id="connectControls">
+<button onclick="logDlg.showModal()" title="Журнал событий" class="icon i-list"></button>
+<button onclick="connect()" class="i-bluetooth-b">Подключиться к пульту</button>
+</div>
+
+<div class="connection-controls hidden" id="disconnectControls">
+<button onclick="disconnect()" title="Отключиться" class="button-active icon i-bluetooth"></button>
+<button onclick="logDlg.showModal()" title="Журнал событий" class="icon i-list"></button>
+<button onclick="onGetRulesWarningDlg.showModal()" class="i-sync">Загрузить из пульта</button>
+</div>
+
+<div class="buttons-group tab-selector">
+<!-- <button onclick="selectTab(this)">1</button> -->
+<button id="addGameBtn" title="Добавить игру" class="button-success icon i-plus" onclick="addGame()"></button>
+</div>
+
+<button id="deleteGameBtn" title="Удалить игру" class="button-danger icon i-trash hidden" onclick="deleteGame()"></button>
+
+</header>
+
+
+
+
+<div class="tabs">
+</div>
+
+
+
+
+<template id="gameTemplate">
+
+<form onchange="onOptionsChange(this)">
+
+
+<fieldset name="fs_gameType">
+<div class="legend">Тип игры</div>
+
+<label><input type="radio" name="gameType" value="GT_FIRST_PRESS" checked> первый нажавший</label>
+<dd>Определение игрока, нажавшего кнопку первым.</dd>
+
+<label><input type="radio" name="gameType" value="GT_ALL_PRESS"> все нажавшие</label>
+<dd>Отображаются все игроки, нажавшие кнопку.
+Игроки отображаются в порядке нажатий.</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_thinkingTime">
+<div class="legend">Время на обсуждение</div>
+
+<label><input type="radio" name="thinkingTimeMode" value="TM_UNLIMIT"> неограниченно</label>
+<label><input type="radio" name="thinkingTimeMode" value="TM_LIMIT" checked> ограниченно</label>
+<dd>По истечении времени вопрос будет завершён.</dd>
+
+<input type="number" name="thinkingTime" placeholder="30" value="30" min="1" max="99" onblur="checkMinMax(this)"> &nbsp;&nbsp; секунд
+
+</fieldset>
+
+<fieldset name="fs_answerTime">
+<div class="legend">Время на ответ</div>
+
+<label><input type="radio" name="answerTimeMode" value="TM_UNLIMIT"> неограниченно</label>
+<label><input type="radio" name="answerTimeMode" value="TM_LIMIT" checked> ограниченно</label>
+<dd>По истечении времени ведущий должен решить, засчитать ответ правильным либо неправильным.</dd>
+
+<input type="number" name="answerTime" placeholder="30" value="30" min="1" max="99" onblur="checkMinMax(this)"> &nbsp;&nbsp; секунд
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_takeAnswer">
+<div class="legend">Принимать ответ</div>
+
+<label><input type="radio" name="takeAnswer" value="TA_AFTER_SIGNAL" checked> после сигнала к обсуждению</label>
+<dd>Игроки могут отвечать только после того, как ведущий даст сигнал к обсуждению.</dd>
+
+<label><input type="radio" name="takeAnswer" value="TA_AFTER_QUESTION_START"> после начала чтения вопроса</label>
+<dd>Игроки могут отвечать во время чтения вопроса.</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_falseStart">
+<div class="legend"></div>
+
+<label><input type="checkbox" name="falseStart" checked> Учитывать фальстарты</label>
+<dd>При отключенных фальстартах нажатия на кнопки игроков во время вопроса игнорируются.</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_falseStartBlock">
+<div class="legend">Блокировка при фальстарте</div>
+
+<label><input type="radio" name="falseStartBlock" value="FSB_FULL" checked> постоянная</label>
+<dd>Игрок будет заблокирован до следующего вопроса.</dd>
+
+<label><input type="radio" name="falseStartBlock" value="FSB_TEMPORARILY"> временная</label>
+<dd>Игрок будет заблокирован на определённое время, по истечении которого сможет повторно нажать кнопку.</dd>
+
+<input type="number" name="falseStartBlockTime" placeholder="5" value="5" min="1" max="99" onblur="checkMinMax(this)"> &nbsp;&nbsp; секунд
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_firstSecondRule">
+<div class="legend"></div>
+
+<label><input type="checkbox" name="firstSecondRule"> Правило первой секунды</label>
+<dd>На пульте ведущего будут отмечены игроки, нажавшие кнопку в течение первой секунды обсуждения.<br><br>
+Правило из "Брэйн ринга":
+если команда нажимает кнопку на первой секунде обсуждения,
+то в случае неправильного ответа отвечавший игрок обязан покинуть игровой стол до конца текущего боя.
+</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_onWrongAnswer">
+<div class="legend">При неправильном ответе</div>
+
+<label><input type="radio" name="onWrongAnswer" value="OWA_NEXT_PLAYER" checked> переходить к следующим игрокам</label>
+<dd>После неправильного ответа возможность ответить передаётся другим игрокам.</dd>
+
+<label><input type="radio" name="onWrongAnswer" value="OWA_NEXT_QUESTION"> переходить к следующему вопросу</label>
+<dd>После неправильного ответа вопрос завершается.</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_onNextPlayer">
+<div class="legend">При переходе к следующим игрокам</div>
+
+<label><input type="radio" name="onNextPlayer" value="ONP_RESTART_THINKING_TIME" checked> перезапускать обсуждение</label>
+<dd>После неправильного ответа текущего игрока обсуждение будет перезапущено.
+Другим игрокам нужно нажать кнопку, чтобы ответить.</dd>
+
+<label><input type="radio" name="onNextPlayer" value="ONP_NEXT_ALREADY_PRESSED"> переходить к уже нажавшим кнопку</label>
+<dd>После неправильного ответа текущего игрока очередь отвечать перейдёт следующему игроку уже нажавшему кнопку.
+Если нажавших кнопку больше нет, ожидание нажатия будет продолжено (без ограничения время).
+Ведущий может завершить вопрос в любой момент.
+Игроки могут нажимать кнопку даже во время ответа другого игрока.</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_onRestartThinkingTime">
+<div class="legend">При перезапуске обсуждения</div>
+
+<label><input type="radio" name="onRestartThinkingTime" value="ORT_REMAINDER" checked> использовать оставшееся время</label>
+<dd>После неправильного ответа текущего игрока другим игрокам на обсуждение будет доступен лишь остаток от полного времени.</dd>
+
+<label><input type="radio" name="onRestartThinkingTime" value="ORT_FULL_TIME"> перезапускать время</label>
+<dd>После неправильного ответа текущего игрока другим игрокам будет дано полное время на обсуждение.</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_leds">
+<div class="legend">Индикация</div>
+
+<label><input type="checkbox" name="showFalseStart" checked> Отображать <span style="white-space: nowrap;">фальстарты <div class="led false-start"></div></span></label>
+<label><input type="checkbox" name="showWrongAnswer" checked> Отображать <span style="white-space: nowrap;">неправильно ответивших <div class="led wrong-answer"></div></span></label>
+<label><input type="checkbox" name="showNextReadyToAnswer" checked> Отображать следующего <span style="white-space: nowrap;">готового отвечать <div class="led next-answer"></div></span></label>
+
+<dd style="margin: 16px 0 0;">
+Пример (<div class="led"></div> - отвечающий):<br><br>
+
+<div class="leds">
+  <div class="led"></div>
+  <div class="led"></div>
+  <div class="led"></div>
+  <div class="led"></div>
+  <div class="led"></div>
+  <div class="led"></div>
+</div>
+</dd>
+
+</fieldset>
+
+
+
+
+<fieldset name="fs_sound">
+<div class="legend">Звуки</div>
+
+<label><input type="checkbox" name="sndQuestion" checked> Вопрос <i class="snd-btn i-play" onclick="playSound('gong')"></i></label>
+<label><input type="checkbox" name="sndStartThinking" checked> Начало <span style="white-space: nowrap;">обсуждения <i class="snd-btn i-play" onclick="playSound('beep')"></i></span></label>
+<label><input type="checkbox" name="sndClock" checked> Идёт <span style="white-space: nowrap;">обсуждение <i class="snd-btn i-play" onclick="playSound('clock')"></i></span></label>
+<label><input type="checkbox" name="sndTikTok" checked> Обратный <span style="white-space: nowrap;">отсчёт <i class="snd-btn i-play" onclick="playSound('tik-tok')"></i></span></label>
+<label><input type="checkbox" name="sndThinkingTimeout" checked> Время на обсуждение <span style="white-space: nowrap;">вышло <i class="snd-btn i-play" onclick="playSound('beep')"></i></span></label>
+<label><input type="checkbox" name="sndFalseStart" checked> Фальстарт <i class="snd-btn i-play" onclick="playSound('false-start')"></i></span></label>
+<label><input type="checkbox" name="sndPlayerButton" checked> Кнопка <span style="white-space: nowrap;">игрока <i class="snd-btn i-play" onclick="playSound('player')"></i></span></label>
+<label><input type="checkbox" name="sndRightAnswer" checked> Правильный <span style="white-space: nowrap;">ответ <i class="snd-btn i-play" onclick="playSound('tada')"></i></span></label>
+<label><input type="checkbox" name="sndWrongAnswer" checked> Неправильный <span style="white-space: nowrap;">ответ <i class="snd-btn i-play" onclick="playSound('wrong')"></i></span></label>
+<label><input type="checkbox" name="sndAnswerTimeout" checked> Время на ответ <span style="white-space: nowrap;">вышло <i class="snd-btn i-play" onclick="playSound('beep')"></i></span></label>
+
+</fieldset>
+
+
+</form>
+
+</template>
+
+
+
+
+
+
+
+
+<footer>
+
+<div class="connection-controls">
+<a href="manual.html" title="Руководство по эксплуатации" class="button icon i-help" target="_blank"></a>
+<button id="saveGamesBtn" disabled class="button-success i-save" onclick="saveGameRules()">Загрузить в пульт</button>
+</div>
+
+</footer>
+
+
+
+
+
+
+
+
+<dialog id="logDlg">
+<div class="title">Журнал событий</div>
+<div id="logContent" class="content">Журнал для диагностики и отладки<br><br></div>
+
+<div class="buttons-group">
+<button onclick="this.closest('dialog').close()">Закрыть</button>
+</div>
+</dialog>
+
+
+
+
+<dialog id="unavailableBltDlg">
+<div class="title">Bluetooth недоступен</div>
+<div class="content">
+Убедитесь, что ваше устройство поддерживает Bluetooth
+и что браузер имеет разрешение на его использование.
+</div>
+
+<div class="buttons-group">
+<button onclick="this.closest('dialog').close()">Закрыть</button>
+</div>
+</dialog>
+
+
+
+
+<dialog id="bltNotFoundDlg">
+<div class="title">Bluetooth недоступен</div>
+<div class="content">
+Возможно выключен Bluetooth адаптер
+либо у сайта нет разрешения на использование Bluetooth.
+</div>
+
+<div class="buttons-group">
+<button onclick="this.closest('dialog').close()">Закрыть</button>
+</div>
+</dialog>
+
+
+
+
+<dialog id=onGetRulesWarningDlg>
+<div class="title">Внимание</div>
+<div class="content">
+Все несохранённые данные будут потеряны.<br>
+Хотите продолжить?
+</div>
+
+<div class="buttons-group">
+<button class="button-danger" onclick="this.closest('dialog').close(); getGameRules()">Да</button>
+<button onclick="this.closest('dialog').close()">Нет</button>
+</div>
+</dialog>
+
+
+
+
+<dialog id="infoDlg">
+<div class="title">Быстрая справка</div>
+<div class="content">
+• На пульте ведущего зажмите на три секунды кнопки А и Б, чтобы активировать Bluetooth режим.<br><br>
+
+• Для подключения к пульту нажмите кнопку<br>
+<button class="i-bluetooth-b">Подключиться к пульту</button><br><br>
+
+• В диалоге выбора Bluetooth устройств выберите "Vika-1".<br><br>
+
+• Для загрузки игр сохранённых в пульте ведущего нажмите кнопку<br>
+<button class="i-sync">Загрузить из пульта</button><br><br>
+
+• После настройки игр сохраните их в пульт ведущего нажатием кнопки<br>
+<button class="button-success i-save">Загрузить в пульт</button>
+</div>
+
+<div class="buttons-group">
+<button onclick="this.closest('dialog').close()">Закрыть</button>
+</div>
+</dialog>
+
+<script>
+infoDlg.showModal();
+</script>
+
+
+
+
+<script src="js/script.js"></script>
+
+
+
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript" >
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();
+   for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+   ym(99534673, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/99534673" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+
+
+
+</body>
+</html>
+
+<!-- (c) Vasso (vasso.etc@gmail.com) -->
