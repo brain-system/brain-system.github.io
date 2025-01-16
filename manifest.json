@@ -1,0 +1,16 @@
+
+{
+  "name": "Вика-1",
+  "description": "Конфигуратор брейн-системы \"Вика-1\"",
+  "start_url": "config.html",
+  "display": "standalone",
+  "theme_color": "#1F2633",
+  "background_color": "#1F2633",
+  "icons": [
+    {
+      "src": "img/appicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
