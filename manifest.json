@@ -8,7 +8,7 @@
   "background_color": "#1F2633",
   "icons": [
     {
-      "src": "img/appicon.png",
+      "src": "img/favicon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
